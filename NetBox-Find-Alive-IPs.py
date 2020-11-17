@@ -14,6 +14,7 @@ ping_count = str(3)
 parameter = "-c"
 interval = '0.2'
 timeout = str(2)
+interface = 'ens160'
 toping = {}
 
 #List of alive IP addresses
@@ -49,7 +50,7 @@ for prefix in prefixes['results']:
     prefix = ipaddress.ip_network(prefix['prefix'])
     for i in prefix.hosts():
         i = str(i)
-        toping[i] = subprocess.Popen(['ping', parameter, ping_count, '-i', interval, '-t', timeout, i], stdout=DEVNULL)
+        toping[i] = subprocess.Popen(['ping', parameter, ping_count, '-i', interval, '-W', timeout, i], stdout=DEVNULL)
     while toping:
         for i, proc in toping.items():
             if proc.poll() is not None:
