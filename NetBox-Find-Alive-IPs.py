@@ -1,3 +1,5 @@
+# Version 1.0
+
 import subprocess
 from subprocess import Popen, PIPE, DEVNULL
 import json
