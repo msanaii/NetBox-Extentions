@@ -13,7 +13,7 @@ urllib3.disable_warnings()
 ping_count = '3'
 parameter = '-c'
 interval = '0.2'
-timeout = '2'
+timeout = '1'
 interface = 'ens160'
 toping = {}
 
@@ -29,7 +29,7 @@ get_base = 'https://' + server + '/api/' + module + '/' + get_section +'/'
 request_headers = {'Authorization': 'Token ' + access_token}
 
 # Getting desired prefixes for scanning
-get_request = get_base + '?limit=0&prefix=10.114.0.128%2F26'
+get_request = get_base + '?limit=0&within=10.114.0.0%2F16'
 get_response = requests.get(get_request, headers=request_headers, verify=False)
 
 prefixes = json.loads(get_response.text)
@@ -50,7 +50,7 @@ for prefix in prefixes['results']:
     prefix = ipaddress.ip_network(prefix['prefix'])
     for i in prefix.hosts():
         i = str(i)
-        toping[i] = subprocess.Popen(['ping', parameter, ping_count, '-i', interval, '-t', timeout, i], stdout=DEVNULL)
+        toping[i] = subprocess.Popen(['ping', '-I', interface, parameter, ping_count, '-W', timeout, '-i', interval, i], stdout=DEVNULL)
     while toping:
         for i, proc in toping.items():
             if proc.poll() is not None:
@@ -91,6 +91,7 @@ for ip in alive_hosts:
                json.dump(netbox_ip, f, indent=4)
                f.write('\n')
     if netbox_ip['count']:
+        print('Found ', netbox_ip['results'][0]['address'])
         continue
     else:
         print('IP address ', ip, 'was not found in NetBox. May I add it to the IPAM? [y/n/q/a]')
