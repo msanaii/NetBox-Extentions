@@ -14,6 +14,8 @@ import ipcalc
 import urllib3
 urllib3.disable_warnings()
 
+password = ''
+
 # Getting prefixes parameters
 access_token = '23aeaef183b3e35177802cadbe781660474129e5'
 server = '10.104.55.39'
@@ -36,7 +38,7 @@ with open('prefixes.json', 'w') as f:
 
 answer = None
 
-Paya_connection = Netmiko(host='10.20.118.2', port='23', username='ip_planning', password='MTC@1234', device_type='cisco_ios_telnet')
+Paya_connection = Netmiko(host='10.20.118.2', port='23', username='ip_planning', password=password, device_type='cisco_ios_telnet')
 
 pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
 
@@ -66,7 +68,7 @@ for prefix in prefixes['results']:
           print('Sanity check passed')
           vlan_id = prefix['vlan']['vid']
           print('VLAN ID should be', vlan_id)
-          next_hop_router = Netmiko(host=str(next_hop), port='23', username='ip_planning', password='MTC@1234', device_type='cisco_ios_telnet')
+          next_hop_router = Netmiko(host=str(next_hop), port='23', username='ip_planning', password=password, device_type='cisco_ios_telnet')
           output = next_hop_router.send_command('sh ip route vrf vpn_wiom ' + bare_network)
           output = str(output).splitlines()
           for line in output:
