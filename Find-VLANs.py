@@ -41,6 +41,7 @@ Paya_connection = Netmiko(host='10.20.118.2', port='23', username='ip_planning',
 pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
 
 for prefix in prefixes['results']:
+     temp = 0
      net = ipaddress.ip_network(prefix['prefix'])
      bare_network = str(net).split('/')[0]
      output = Paya_connection.send_command('sh ip route vrf vpn_wiom ' + bare_network)
@@ -63,14 +64,23 @@ for prefix in prefixes['results']:
      # print(str(output))
      if str(net) in sanity_check:
           print('Sanity check passed')
-          print('VLAN ID should be', prefix['vlan']['vid'])
+          vlan_id = prefix['vlan']['vid']
+          print('VLAN ID should be', vlan_id)
           next_hop_router = Netmiko(host=str(next_hop), port='23', username='ip_planning', password='MTC@1234', device_type='cisco_ios_telnet')
           output = next_hop_router.send_command('sh ip route vrf vpn_wiom ' + bare_network)
-          print(output)
           output = str(output).splitlines()
           for line in output:
                if 'directly connected' in line:
                     print('directly connected')
+                    print(line)
+                    if str(vlan_id) in line:
+                         print('VLAN ID stored in NetBox seems correct')
+                         temp = 1
+                    if not temp:
+                         print('VLAN ID incorrect')
+                         temp = input()
+               elif 'Known via ' in line:
+                    print('Needs more checking')
      else:
                print('Something is wrong')
                sys.exit()
