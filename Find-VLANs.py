@@ -7,6 +7,8 @@ import ipaddress
 import sys
 from netmiko import Netmiko
 from netmiko import ConnectHandler
+import re
+import ipcalc
 # from napalm import get_network_driver
 
 import urllib3
@@ -34,10 +36,46 @@ with open('prefixes.json', 'w') as f:
 
 answer = None
 
-PE_connection = Netmiko(host='10.20.118.2', port='23', username='ip_planning', password='MTC@1234', device_type='cisco_ios_telnet')
-output = PE_connection.send_command('sh ip route vrf vpn_wiom ' + '10.114.0.128')
-print(output)
-PE_connection.disconnect()
+Paya_connection = Netmiko(host='10.20.118.2', port='23', username='ip_planning', password='MTC@1234', device_type='cisco_ios_telnet')
 
-# for prefix in prefixes['results']:
-#      net = ipaddress.ip_network(prefix['prefix'])
+pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+
+for prefix in prefixes['results']:
+     net = ipaddress.ip_network(prefix['prefix'])
+     bare_network = str(net).split('/')[0]
+     output = Paya_connection.send_command('sh ip route vrf vpn_wiom ' + bare_network)
+     print('-------------------------')
+     print('Prefix is ' + str(net))
+     output = str(output).splitlines()
+     for line in output:
+          if ', from' in line:
+               next_hop = line.strip()
+               next_hop = pattern.search(next_hop)[0]
+          if str(net) in line:
+               sanity_check = line
+     print('Sanity: ' + sanity_check)
+     print('NH (MPLS): ' + next_hop)
+     if '10.20' in next_hop:
+          next_hop = ipaddress.ip_address(next_hop) + 1
+     elif '10.101' in next_hop:
+          next_hop = ipaddress.ip_address(next_hop) + 512
+     print('NH (OM): ' + str(next_hop))
+     # print(str(output))
+     if str(net) in sanity_check:
+          print('Sanity check passed')
+          print('VLAN ID should be', prefix['vlan']['vid'])
+          next_hop_router = Netmiko(host=str(next_hop), port='23', username='ip_planning', password='MTC@1234', device_type='cisco_ios_telnet')
+          output = next_hop_router.send_command('sh ip route vrf vpn_wiom ' + bare_network)
+          print(output)
+          output = str(output).splitlines()
+          for line in output:
+               if 'directly connected' in line:
+                    print('directly connected')
+     else:
+               print('Something is wrong')
+               sys.exit()
+     print('-------------------------')
+     time.sleep(1)
+
+
+Paya_connection.disconnect()
