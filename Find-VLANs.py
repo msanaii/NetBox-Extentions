@@ -1,11 +1,12 @@
 import subprocess
-from subprocess import Popen, PIPE, DEVNULL
+# from subprocess import Popen, PIPE, DEVNULL
 import json
 import requests
 import time
 import ipaddress
 import sys
-import netmiko
+from netmiko import Netmiko
+from netmiko import ConnectHandler
 # from napalm import get_network_driver
 
 import urllib3
@@ -31,3 +32,12 @@ time.sleep(1)
 with open('prefixes.json', 'w') as f:
      json.dump(prefixes, f, indent=4)
 
+answer = None
+
+PE_connection = Netmiko(host='10.20.118.2', port='23', username='ip_planning', password='MTC@1234', device_type='cisco_ios_telnet')
+output = PE_connection.send_command('sh ip route vrf vpn_wiom ' + '10.114.0.128')
+print(output)
+PE_connection.disconnect()
+
+# for prefix in prefixes['results']:
+#      net = ipaddress.ip_network(prefix['prefix'])
