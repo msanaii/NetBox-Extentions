@@ -2,7 +2,7 @@ import json
 import requests
 import time
 import ipaddress
-import sys
+# import sys
 
 import urllib3
 urllib3.disable_warnings()
@@ -57,7 +57,7 @@ for prefix in prefixes['results']:
                json.dump(post_result, f, indent=4)
                f.write('\n')
      elif (answer == 'q' or answer == 'Q'):
-          sys.exit()
+          raise SystemExit(0)
      else:
           continue
 
