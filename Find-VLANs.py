@@ -8,7 +8,7 @@ import sys
 from netmiko import Netmiko
 from netmiko import ConnectHandler
 import re
-import ipcalc
+# import ipcalc
 # from napalm import get_network_driver
 
 import urllib3
