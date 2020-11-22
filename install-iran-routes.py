@@ -1,5 +1,7 @@
 #!/usr/bin/python3.7
 
+# This file belongs to Behnam Yazdani, and I'm only hosting it here
+
 import json
 import requests
 import time
